@@ -1,0 +1,426 @@
+/* ---------- Map container ---------- */
+.live-map {
+  background: #0b0b0f;
+  min-height: 240px;
+}
+.live-map .leaflet-control-attribution {
+  background: rgba(10, 10, 14, 0.7);
+  color: #9a9aa5;
+}
+.live-map .leaflet-control-attribution a {
+  color: #ffa25a;
+}
+
+/* ---------- Fire marker (last known location) ---------- */
+/* Icon box is 96x96, anchor at (48, 64): the base of the fire. */
+.fire-marker {
+  background: transparent;
+  border: 0;
+}
+
+.fire-marker__wrap {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* Ground glow under the fire */
+.fire-marker__base {
+  position: absolute;
+  left: 50%;
+  top: 64px;
+  width: 44px;
+  height: 12px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 210, 120, 0.95) 0%,
+    rgba(255, 110, 20, 0.7) 40%,
+    rgba(255, 60, 0, 0) 75%
+  );
+  filter: blur(1px);
+  animation: fire-base 1.6s ease-in-out infinite alternate;
+}
+
+/* Soft halo */
+.fire-marker__glow {
+  position: absolute;
+  left: 50%;
+  top: 52px;
+  width: 84px;
+  height: 84px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 140, 30, 0.55) 0%,
+    rgba(255, 70, 0, 0.25) 40%,
+    rgba(255, 40, 0, 0) 70%
+  );
+  mix-blend-mode: screen;
+  animation: fire-glow 2.4s ease-in-out infinite;
+}
+
+/* Expanding shock rings */
+.fire-marker__ring {
+  position: absolute;
+  left: 50%;
+  top: 64px;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 110, 20, 0.9);
+  box-shadow:
+    0 0 12px rgba(255, 90, 0, 0.8),
+    inset 0 0 8px rgba(255, 160, 60, 0.6);
+  opacity: 0;
+  transform: scale(0.4);
+  animation: fire-ring 3s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+}
+.fire-marker__ring--2 {
+  animation-delay: 1s;
+  border-color: rgba(255, 60, 10, 0.85);
+}
+.fire-marker__ring--3 {
+  animation-delay: 2s;
+  border-color: rgba(255, 170, 60, 0.8);
+}
+
+/* Flame stack */
+.fire-marker__flames {
+  position: absolute;
+  left: 50%;
+  top: 64px;
+  width: 0;
+  height: 0;
+  filter: drop-shadow(0 0 6px rgba(255, 100, 0, 0.9))
+    drop-shadow(0 0 16px rgba(255, 50, 0, 0.6));
+}
+
+/* Teardrop: a square with three rounded corners, rotated so the sharp corner points up. */
+.fire-marker__flame {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  border-radius: 50% 0 50% 50%;
+  transform-origin: 50% 100%;
+  mix-blend-mode: screen;
+}
+
+.fire-marker__flame--red {
+  width: 40px;
+  height: 40px;
+  margin-left: -20px;
+  background: radial-gradient(
+    circle at 60% 40%,
+    #ff5a1a 0%,
+    #e2240a 45%,
+    rgba(160, 10, 0, 0.85) 70%,
+    rgba(120, 0, 0, 0) 100%
+  );
+  animation: flame-flicker-a 1.1s ease-in-out infinite alternate;
+}
+.fire-marker__flame--orange {
+  width: 31px;
+  height: 31px;
+  margin-left: -15.5px;
+  background: radial-gradient(
+    circle at 60% 40%,
+    #ffc04a 0%,
+    #ff8a1a 40%,
+    #ff4d00 75%,
+    rgba(255, 60, 0, 0) 100%
+  );
+  animation: flame-flicker-b 0.85s ease-in-out infinite alternate;
+}
+.fire-marker__flame--yellow {
+  width: 21px;
+  height: 21px;
+  margin-left: -10.5px;
+  background: radial-gradient(
+    circle at 60% 40%,
+    #fff3b0 0%,
+    #ffd34d 45%,
+    #ffa21a 80%,
+    rgba(255, 140, 0, 0) 100%
+  );
+  animation: flame-flicker-c 0.65s ease-in-out infinite alternate;
+}
+.fire-marker__flame--white {
+  width: 11px;
+  height: 11px;
+  margin-left: -5.5px;
+  bottom: -1px;
+  background: radial-gradient(
+    circle at 55% 45%,
+    #ffffff 0%,
+    #fff8d6 50%,
+    rgba(255, 230, 150, 0) 100%
+  );
+  animation: flame-flicker-c 0.5s ease-in-out infinite alternate-reverse;
+}
+
+/* Rising sparks */
+.fire-marker__spark {
+  position: absolute;
+  left: 50%;
+  top: 50px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #ffd27a;
+  box-shadow: 0 0 6px 1px rgba(255, 140, 30, 0.95);
+  opacity: 0;
+  animation: fire-spark 1.8s ease-out infinite;
+}
+.fire-marker__spark--1 {
+  --spark-x: -10px;
+  animation-delay: 0.2s;
+}
+.fire-marker__spark--2 {
+  --spark-x: 12px;
+  animation-delay: 0.9s;
+}
+.fire-marker__spark--3 {
+  --spark-x: -2px;
+  animation-delay: 1.4s;
+  width: 2px;
+  height: 2px;
+}
+
+/* Emoji core sits low, as the hot center */
+.fire-marker__emoji {
+  position: absolute;
+  left: 50%;
+  top: 50px;
+  transform: translate(-50%, -50%);
+  font-size: 18px;
+  line-height: 1;
+  opacity: 0.85;
+  filter: saturate(1.3) drop-shadow(0 0 4px rgba(255, 200, 80, 0.9));
+  animation: fire-emoji 0.9s ease-in-out infinite alternate;
+  user-select: none;
+}
+
+.fire-marker__wrap:hover .fire-marker__flames,
+.fire-marker__wrap:focus-visible .fire-marker__flames {
+  filter: drop-shadow(0 0 8px rgba(255, 140, 0, 1))
+    drop-shadow(0 0 22px rgba(255, 60, 0, 0.8));
+}
+
+/* ---------- Keyframes ---------- */
+@keyframes flame-flicker-a {
+  0% {
+    transform: rotate(-45deg) scale(1, 1) skew(0deg, 0deg);
+    opacity: 0.9;
+  }
+  35% {
+    transform: rotate(-42deg) scale(1.05, 1.12) skew(3deg, 2deg);
+  }
+  70% {
+    transform: rotate(-48deg) scale(0.96, 1.06) skew(-3deg, -2deg);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(-44deg) scale(1.03, 1.16) skew(2deg, 1deg);
+    opacity: 0.88;
+  }
+}
+@keyframes flame-flicker-b {
+  0% {
+    transform: rotate(-47deg) scale(1, 1.05) skew(-2deg, 0deg);
+  }
+  50% {
+    transform: rotate(-41deg) scale(1.06, 1.18) skew(4deg, 3deg);
+  }
+  100% {
+    transform: rotate(-46deg) scale(0.95, 1.1) skew(-3deg, -2deg);
+  }
+}
+@keyframes flame-flicker-c {
+  0% {
+    transform: rotate(-45deg) scale(1, 1);
+    opacity: 0.95;
+  }
+  50% {
+    transform: rotate(-40deg) scale(1.1, 1.22) skew(3deg, 3deg);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(-49deg) scale(0.92, 1.08) skew(-3deg, -1deg);
+    opacity: 0.85;
+  }
+}
+@keyframes fire-ring {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.95;
+  }
+  70% {
+    opacity: 0.25;
+  }
+  100% {
+    transform: scale(4.2);
+    opacity: 0;
+  }
+}
+@keyframes fire-glow {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0.75;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.12);
+    opacity: 1;
+  }
+}
+@keyframes fire-base {
+  from {
+    opacity: 0.7;
+    transform: translate(-50%, -50%) scaleX(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scaleX(1.12);
+  }
+}
+@keyframes fire-spark {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(1);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--spark-x, 0px)), -42px) scale(0.3);
+  }
+}
+@keyframes fire-emoji {
+  from {
+    transform: translate(-50%, -50%) scale(0.94) rotate(-3deg);
+  }
+  to {
+    transform: translate(-50%, -54%) scale(1.06) rotate(3deg);
+  }
+}
+
+/* ---------- Embers (older activities) ---------- */
+.ember-marker {
+  filter: drop-shadow(0 0 3px rgba(255, 110, 20, 0.7));
+  transition: fill-opacity 0.2s ease;
+}
+.ember-marker:hover {
+  fill-opacity: 0.85;
+}
+.ember-trail {
+  filter: drop-shadow(0 0 2px rgba(255, 100, 0, 0.5));
+}
+
+/* ---------- Popups ---------- */
+.map-popup-wrap .leaflet-popup-content-wrapper {
+  background: rgba(18, 16, 20, 0.95);
+  color: #ece8e4;
+  border: 1px solid rgba(255, 120, 40, 0.35);
+  border-radius: 10px;
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.6),
+    0 0 18px rgba(255, 90, 0, 0.18);
+}
+.map-popup-wrap .leaflet-popup-tip {
+  background: rgba(18, 16, 20, 0.95);
+  border: 1px solid rgba(255, 120, 40, 0.35);
+}
+.map-popup-wrap .leaflet-popup-content {
+  margin: 12px 14px;
+  min-width: 200px;
+  max-width: 280px;
+}
+.map-popup-wrap a.leaflet-popup-close-button {
+  color: #b9b0aa;
+}
+.map-popup {
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.map-popup__badge {
+  display: inline-block;
+  margin-bottom: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #1a0a00;
+  background: linear-gradient(90deg, #ffb347, #ff5e1a);
+}
+.map-popup__place {
+  font-weight: 700;
+  font-size: 15px;
+  color: #ffb070;
+  margin-bottom: 4px;
+}
+.map-popup__title {
+  display: block;
+  color: #f4f1ee !important;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 140, 60, 0.5);
+  text-underline-offset: 2px;
+  margin-bottom: 6px;
+}
+.map-popup__title:hover {
+  color: #ffcf9e !important;
+}
+.map-popup__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  color: #a39b95;
+  font-size: 12px;
+}
+.map-popup__conf {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #ff9a4a;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .fire-marker__ring,
+  .fire-marker__spark {
+    animation: none;
+    opacity: 0;
+  }
+  .fire-marker__ring--1 {
+    opacity: 0.5;
+    transform: scale(2);
+  }
+  .fire-marker__flame--red,
+  .fire-marker__flame--orange,
+  .fire-marker__flame--yellow,
+  .fire-marker__flame--white {
+    animation: none;
+    transform: rotate(-45deg);
+  }
+  .fire-marker__glow,
+  .fire-marker__base,
+  .fire-marker__emoji {
+    animation: none;
+  }
+  .fire-marker__glow,
+  .fire-marker__base {
+    transform: translate(-50%, -50%);
+  }
+  .fire-marker__emoji {
+    transform: translate(-50%, -50%);
+  }
+}

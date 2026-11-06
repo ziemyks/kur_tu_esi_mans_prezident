@@ -1,0 +1,58 @@
+/* Keyframes and helpers for advertisement components (WinterTireAd, WinterTireAdStrip). */
+
+@keyframes ad-snowfall {
+  0% {
+    transform: translate3d(0, -10%, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate3d(12px, 110%, 0);
+    opacity: 0;
+  }
+}
+
+@keyframes ad-tire-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ad-snowflake {
+  position: absolute;
+  top: -1rem;
+  color: rgba(255, 255, 255, 0.85);
+  pointer-events: none;
+  user-select: none;
+  animation-name: ad-snowfall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.ad-snow-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ad-tire-spin {
+  animation: ad-tire-spin 24s linear infinite;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ad-snowflake,
+  .ad-tire-spin {
+    animation: none !important;
+  }
+  .ad-snowflake {
+    opacity: 0.45;
+    top: var(--ad-rest-top, 50%);
+  }
+}
